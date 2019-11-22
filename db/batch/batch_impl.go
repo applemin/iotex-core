@@ -101,24 +101,6 @@ func (b *baseKVStoreBatch) SerializeQueue(filter WriteInfoFilter) []byte {
 	return bytes
 }
 
-// ExcludeEntries returns copy of batch with certain entries excluded
-func (b *baseKVStoreBatch) ExcludeEntries(ns string, writeType WriteType) KVStoreBatch {
-	b.mutex.Lock()
-	defer b.mutex.Unlock()
-
-	c := baseKVStoreBatch{
-		writeQueue: []*WriteInfo{},
-	}
-	// remove entries
-	for i := range b.writeQueue {
-		if (ns == "" || b.writeQueue[i].namespace == ns) && b.writeQueue[i].writeType == writeType {
-			continue
-		}
-		c.writeQueue = append(c.writeQueue, b.writeQueue[i])
-	}
-	return &c
-}
-
 // Clear clear write queue
 func (b *baseKVStoreBatch) Clear() {
 	b.mutex.Lock()
@@ -189,10 +171,6 @@ func (cb *cachedBatch) Translate(wit WriteInfoTranslate) KVStoreBatch {
 
 func (cb *cachedBatch) Entry(i int) (*WriteInfo, error) {
 	return cb.kvStoreBatch.Entry(i)
-}
-
-func (cb *cachedBatch) ExcludeEntries(ns string, wt WriteType) KVStoreBatch {
-	return cb.kvStoreBatch.ExcludeEntries(ns, wt)
 }
 
 func (cb *cachedBatch) SerializeQueue(filter WriteInfoFilter) []byte {

@@ -38,7 +38,7 @@ type (
 func NewWriteInfo(
 	writeType WriteType,
 	namespace string,
-	key []byte,
+	key,
 	value []byte,
 	errorFormat string,
 	errorArgs interface{},

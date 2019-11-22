@@ -817,8 +817,6 @@ func (bc *blockchain) runActions(
 		return nil, errors.New("statefactory cannot be nil")
 	}
 	bcCtx := protocol.MustGetBlockchainCtx(ctx)
-	bcCtx.History = ws.History()
-	ctx = protocol.WithBlockchainCtx(ctx, bcCtx)
 	registry := bcCtx.Registry
 	for _, p := range registry.All() {
 		if pp, ok := p.(protocol.PreStatesCreator); ok {

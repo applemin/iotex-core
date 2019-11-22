@@ -57,14 +57,7 @@ func TestCachedBatch(t *testing.T) {
 	require.Equal([]byte(nil), w.value)
 	require.Equal(Delete, w.writeType)
 
-	// test ExcludeEntries
-	d := cb.SerializeQueue(nil)
-	require.Equal(3, cb.Size())
-	r := cb.ExcludeEntries(bucket1, Delete)
-	require.Equal(1, r.Size())
-	require.NotEqual(d, r.SerializeQueue(nil))
-	r = cb.ExcludeEntries("", Put)
-	require.Equal(2, r.Size())
+	// TODO: test filter and translate
 }
 
 func TestSnapshot(t *testing.T) {
