@@ -27,6 +27,7 @@ import (
 	"github.com/iotexproject/iotex-core/blockchain/block"
 	"github.com/iotexproject/iotex-core/config"
 	"github.com/iotexproject/iotex-core/db"
+	"github.com/iotexproject/iotex-core/db/batch"
 	"github.com/iotexproject/iotex-core/pkg/cache"
 	"github.com/iotexproject/iotex-core/pkg/compress"
 	"github.com/iotexproject/iotex-core/pkg/enc"
@@ -606,7 +607,7 @@ func (dao *blockDAO) putBlock(blk *block.Block) error {
 			return errors.Wrapf(err, "error when compressing a block footer")
 		}
 	}
-	batchForBlock := db.NewBatch()
+	batchForBlock := batch.NewBatch()
 	hash := blk.HashBlock()
 	batchForBlock.Put(blockHeaderNS, hash[:], serHeader, "failed to put block header")
 	batchForBlock.Put(blockBodyNS, hash[:], serBody, "failed to put block body")
@@ -631,7 +632,7 @@ func (dao *blockDAO) putBlock(blk *block.Block) error {
 		return err
 	}
 
-	batch := db.NewBatch()
+	batch := batch.NewBatch()
 	heightValue := byteutil.Uint64ToBytes(blkHeight)
 	hashKey := hashKey(hash)
 	batch.Put(blockHashHeightMappingNS, hashKey, heightValue, "failed to put hash -> height mapping")
@@ -665,8 +666,8 @@ func (dao *blockDAO) deleteTipBlock() error {
 		return errors.Wrap(err, "failed to get tip block hash")
 	}
 
-	batch := db.NewBatch()
-	batchForBlock := db.NewBatch()
+	b := batch.NewBatch()
+	batchForBlock := batch.NewBatch()
 	whichDB, _, err := dao.getDBFromHeight(height)
 	if err != nil {
 		return err
@@ -688,23 +689,23 @@ func (dao *blockDAO) deleteTipBlock() error {
 	batchForBlock.Delete(receiptsNS, byteutil.Uint64ToBytes(height), "failed to delete receipt")
 	// Delete hash -> height mapping
 	hashKey := hashKey(hash)
-	batch.Delete(blockHashHeightMappingNS, hashKey, "failed to delete hash -> height mapping")
+	b.Delete(blockHashHeightMappingNS, hashKey, "failed to delete hash -> height mapping")
 
 	// Delete height -> hash mapping
 	heightKey := heightKey(height)
-	batch.Delete(blockHashHeightMappingNS, heightKey, "failed to delete height -> hash mapping")
+	b.Delete(blockHashHeightMappingNS, heightKey, "failed to delete height -> hash mapping")
 
 	// Update tip height
-	batch.Put(blockNS, topHeightKey, byteutil.Uint64ToBytes(height-1), "failed to put top height")
+	b.Put(blockNS, topHeightKey, byteutil.Uint64ToBytes(height-1), "failed to put top height")
 
 	// Update tip hash
 	hash2, err := dao.getBlockHash(height - 1)
 	if err != nil {
 		return errors.Wrap(err, "failed to get tip block hash")
 	}
-	batch.Put(blockNS, topHashKey, hash2[:], "failed to put top hash")
+	b.Put(blockNS, topHashKey, hash2[:], "failed to put top hash")
 
-	if err := dao.kvstore.WriteBatch(batch); err != nil {
+	if err := dao.kvstore.WriteBatch(b); err != nil {
 		return err
 	}
 	return whichDB.WriteBatch(batchForBlock)

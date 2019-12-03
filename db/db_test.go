@@ -12,6 +12,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/iotexproject/iotex-core/db/batch"
 	"github.com/iotexproject/iotex-core/testutil"
 
 	"github.com/stretchr/testify/assert"
@@ -125,7 +126,7 @@ func TestDBInMemBatchCommit(t *testing.T) {
 	require := require.New(t)
 	kvStore := NewMemKVStore()
 	ctx := context.Background()
-	batch := NewBatch()
+	batch := batch.NewBatch()
 
 	require.NoError(kvStore.Start(ctx))
 	defer func() {
@@ -152,7 +153,7 @@ func TestDBBatch(t *testing.T) {
 	testBatchRollback := func(kvStore KVStore, t *testing.T) {
 		require := require.New(t)
 		ctx := context.Background()
-		batch := NewBatch()
+		batch := batch.NewBatch()
 
 		require.NoError(kvStore.Start(ctx))
 		defer func() {
@@ -246,7 +247,7 @@ func TestCacheKV(t *testing.T) {
 			require.NoError(kv.Stop(context.Background()))
 		}()
 
-		cb := NewCachedBatch()
+		cb := batch.NewCachedBatch()
 		cb.Put(bucket1, testK1[0], testV1[0], "")
 		v, _ := cb.Get(bucket1, testK1[0])
 		require.Equal(testV1[0], v)
@@ -268,7 +269,7 @@ func TestCacheKV(t *testing.T) {
 		v, _ = kv.Get(bucket1, testK1[1])
 		require.Equal(testV1[2], v)
 
-		cb = NewCachedBatch()
+		cb = batch.NewCachedBatch()
 		require.NoError(kv.WriteBatch(cb))
 	}
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/iotexproject/go-pkgs/hash"
 	"github.com/iotexproject/iotex-core/db"
+	"github.com/iotexproject/iotex-core/db/batch"
 	"github.com/iotexproject/iotex-core/state"
 )
 
@@ -31,7 +32,7 @@ type StateManager interface {
 	PutState(hash.Hash160, interface{}) error
 	DelState(pkHash hash.Hash160) error
 	GetDB() db.KVStore
-	GetCachedBatch() db.CachedBatch
+	GetCachedBatch() batch.CachedBatch
 }
 
 // DummyChainManager mocks ChainManager interface
